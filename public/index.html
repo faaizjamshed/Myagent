@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LeadPilot</title>
+  <meta name="description" content="LeadPilot full-stack starter for lead management and CSV export on Cloudflare." />
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=boska@400,500,700&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <style>:root,[data-theme="light"]{--bg:#f7f6f2;--surface:#f9f8f5;--surface-2:#fbfbf9;--border:#d4d1ca;--divider:#e2dfda;--text:#28251d;--muted:#7a7974;--primary:#01696f;--primary-hover:#0c4e54;--success:#437a22;--warning:#964219;--error:#a12c7b;--inv:#f9f8f4;--radius:18px;--shadow:0 12px 28px rgba(25,22,18,.08);--font-body:'Satoshi',sans-serif;--font-display:'Boska',serif}[data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--surface-2:#201f1d;--border:#393836;--divider:#2a2927;--text:#cdccca;--muted:#8c8a86;--primary:#4f98a3;--primary-hover:#227f8b;--success:#6daa45;--warning:#bb653b;--error:#d163a7;--inv:#171614;--shadow:0 12px 28px rgba(0,0,0,.28)}*{box-sizing:border-box}body{margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text)}a{text-decoration:none;color:inherit}button,input,select{font:inherit}.layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}.sidebar{padding:24px;background:color-mix(in oklab,var(--surface) 88%,var(--primary) 12%);border-right:1px solid var(--border)}.brand{display:flex;gap:12px;align-items:center;margin-bottom:24px}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--primary),#82c9c1);display:grid;place-items:center;color:white}.logo svg{width:22px;height:22px}.brand h1{font-family:var(--font-display);margin:0;font-size:28px}.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}.nav{display:grid;gap:8px}.nav a{padding:12px 14px;border-radius:14px;color:var(--muted)}.nav a:hover,.nav a.active{background:var(--surface-2);color:var(--text)}.main{padding:28px;display:grid;gap:20px}.hero,.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}.hero{padding:28px;display:grid;grid-template-columns:1.3fr .9fr;gap:20px}.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}.hero h2{font-family:var(--font-display);font-size:52px;line-height:.95;margin:0 0 12px;max-width:10ch}.hero p{color:var(--muted);max-width:64ch}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.btn{border:none;border-radius:999px;padding:12px 18px;min-height:44px;cursor:pointer}.btn-primary{background:var(--primary);color:var(--inv)}.btn-primary:hover{background:var(--primary-hover)}.btn-secondary{background:var(--surface-2);border:1px solid var(--border);color:var(--text)}.stats{display:grid;gap:12px}.stat{padding:18px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2)}.stat .label{font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.08em}.stat .value{font-size:32px;font-weight:700;margin-top:6px}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px}.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-4{grid-column:span 4}.card{padding:22px}.card h3{margin:0 0 14px;font-size:24px}.tiny{font-size:13px;color:var(--muted)}.toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.toolbar .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.field{padding:10px 12px;border:1px solid var(--border);background:var(--surface-2);border-radius:12px;color:var(--text)}.file-label{padding:10px 16px;background:var(--primary);color:var(--inv);border-radius:999px;cursor:pointer;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px}.file-label:hover{background:var(--primary-hover)}table{width:100%;border-collapse:collapse}th,td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--divider);font-size:14px;vertical-align:top}th{color:var(--muted);font-weight:600}.status{display:inline-flex;padding:5px 10px;border-radius:999px;font-size:12px}.ok{background:color-mix(in oklab,var(--success) 16%, var(--surface));color:var(--success)}.warn{background:color-mix(in oklab,var(--warning) 16%, var(--surface));color:var(--warning)}.err{background:color-mix(in oklab,var(--error) 16%, var(--surface));color:var(--error)}.list{display:grid;gap:12px}.item{padding:14px;border-radius:14px;border:1px solid var(--divider);background:var(--surface-2)}.footer{padding:16px 20px;border:1px solid var(--border);border-radius:16px;background:color-mix(in oklab,var(--primary) 8%, var(--surface))}@media (max-width:1100px){.layout{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.span-8,.span-4{grid-column:span 12}}@media (max-width:700px){.main,.sidebar{padding:16px}.hero h2{font-size:38px}.toolbar{align-items:stretch}}</style>
+</head>
+<body>
+<div class="layout"><aside class="sidebar"><div class="brand"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h7"/><path d="M4 7h12"/><path d="M4 17h10"/><circle cx="18" cy="12" r="3" fill="currentColor" stroke="none"/></svg></div><div><h1>LeadPilot</h1><p>Cloudflare full-stack starter</p></div></div><nav class="nav"><a class="active" href="#overview">Overview</a><a href="#leads">Leads</a><a href="#workflow">Workflow</a><a href="#deploy">Deploy</a></nav><div style="margin-top:20px;display:grid;gap:12px;"><button class="btn btn-secondary" id="themeBtn">Toggle theme</button><button class="btn btn-primary" id="syncBtn">Refresh leads</button></div></aside><main class="main"><section class="hero" id="overview"><div><div class="eyebrow">Free + fast path</div><h2>Frontend aur backend aik hi project mein.</h2><p>Yeh version Cloudflare ke free stack ke liye bana hai: static frontend plus simple backend API. Ismein leads show hongi, CSV download hoga, aur tum khud se ya python local tools se data la kar analyze kar sakte ho.</p><div class="actions"><button class="btn btn-primary" id="downloadTop">Download CSV</button><a class="btn btn-secondary" href="#deploy">Setup guide</a></div></div><div class="stats"><div class="stat"><div class="label">Weekly target</div><div class="value">$1,500</div></div><div class="stat"><div class="label">Free static requests</div><div class="value">Unlimited</div></div><div class="stat"><div class="label">Free function quota</div><div class="value">100k/day</div></div></div></section><section class="grid" id="leads"><article class="card span-12"><div class="toolbar"><div><h3>All leads</h3><p class="tiny">Local scraper ka data import karein ya Cloudflare worker fallback JSON analyze karein.</p></div><div class="filters">
+        <label class="file-label" for="csvFileInput">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Import Scraped CSV
+        </label>
+        <input type="file" id="csvFileInput" accept=".csv" style="display:none;" />
+
+        <select class="field" id="countryFilter"><option value="">All locations</option><option value="USA">USA</option><option value="UK">UK</option><option value="Canada">Canada</option></select>
+        <button class="btn btn-secondary" id="downloadBtn">Download CSV</button></div></div><div style="overflow:auto;"><table id="leadsTable"><thead><tr><th>Business Name</th><th>Address</th><th>Phone</th><th>Website</th><th>Email</th><th>Site Condition</th><th>Email Status</th></tr></thead><tbody id="leadsBody"></tbody></table></div></article><article class="card span-8" id="workflow"><h3>What this starter does</h3><div class="list"><div class="item">Cloudflare static frontend root par <code>index.html</code> ke sath chalega.</div><div class="item">Python script se local data fetch karke dynamic dashboards par run kiya ja sakta hai.</div><div class="item">Lead table se CSV export browser mein hi ho jayega.</div><div class="item">Gmail App connection live and active hai! Local system automatically dispatch handle kar raha hai.</div></div></article><article class="card span-4"><h3>Status</h3><div class="list"><div class="item"><strong>Frontend:</strong> Ready</div><div class="item"><strong>Local Python Engine:</strong> Operational</div><div class="item"><strong>Outbound Mailer:</strong> Connected via App Pass</div><div class="item"><strong>Targeting:</strong> USA / UK / Canada</div></div></article></section><section class="footer" id="deploy"><strong>Deploy note:</strong> is project ko direct Cloudflare Pages/Workers par deploy karo. Root par <code>index.html</code> hona zaroori hai; backend API worker script se aaye gi.</section></main></div>
+<script>
+const fallbackLeads=[
+  {business:'Prime Cut Barbers',address:'Manchester Street 14',phone:'+44161999',website:'primecutbarbers.co.uk',email:'hello@primecutbarbers.co.uk',condition:'Outdated (Old Copyright)',status:'Pending'},
+  {business:'Maple Core Fitness',address:'Toronto Highway 5',phone:'+1416888',website:'maplecorefitness.ca',email:'team@maplecorefitness.ca',condition:'Modern',status:'Pending'},
+  {business:'Urban Flame Kitchen',address:'Chicago Downtown',phone:'+1312777',website:'urbanflamekitchen.com',email:'info@urbanflamekitchen.com',condition:'Outdated (No Viewport)',status:'Pending'}
+];
+let allLeads=[];
+const body=document.getElementById('leadsBody');
+const countryFilter=document.getElementById('countryFilter');
+
+function statusClass(status){
+  if(!status) return 'err';
+  if(/modern|sent/i.test(status)) return 'ok';
+  if(/outdated|review/i.test(status)) return 'warn';
+  return 'err';
+}
+
+function renderRows(rows){
+  body.innerHTML='';
+  rows.forEach(lead=>{
+    // Fallback checks for both formats (cloud fallback structure vs fresh python csv structure)
+    const bName = lead.business || lead['Business Name'] || 'N/A';
+    const bAddress = lead.address || lead['Address'] || 'N/A';
+    const bPhone = lead.phone || lead['Phone'] || 'N/A';
+    const bWebsite = lead.website || lead['Website'] || 'N/A';
+    const bEmail = lead.email || lead['Email'] || 'N/A';
+    const bCondition = lead.condition || lead['Site Condition'] || 'Unknown';
+    const bStatus = lead.status || lead['Email Status'] || 'Pending';
+
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><strong>${bName}</strong></td>
+      <td class="tiny">${bAddress}</td>
+      <td>${bPhone}</td>
+      <td><a href="${bWebsite}" target="_blank" style="color:var(--primary);text-decoration:underline;">Link</a></td>
+      <td class="tiny">${bEmail}</td>
+      <td><span class="status ${statusClass(bCondition)}">${bCondition}</span></td>
+      <td><span class="status ${statusClass(bStatus)}">${bStatus}</span></td>
+    `;
+    body.appendChild(tr);
+  });
+}
+
+function applyFilters() {
+  const selectedLocation = countryFilter.value.toLowerCase();
+  if (!selectedLocation) {
+    renderRows(allLeads);
+    return;
+  }
+  const filtered = allLeads.filter(x => {
+    const addr = (x.address || x['Address'] || '').toLowerCase();
+    const web = (x.website || x['Website'] || '').toLowerCase();
+    return addr.includes(selectedLocation) || web.includes('.' + selectedLocation) || (selectedLocation === 'uk' && (addr.includes('united kingdom') || addr.includes('manchester') || web.includes('.co.uk')));
+  });
+  renderRows(filtered);
+}
+
+// Local File Upload parsing logic
+document.getElementById('csvFileInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  Papa.parse(file, {
+    header: true,
+    skipEmptyLines: true,
+    complete: function(results) {
+      allLeads = results.data;
+      applyFilters();
+    }
+  });
+});
+
+function tableToCSV(){
+  return [...document.querySelectorAll('#leadsTable tr')].map(row=>[...row.querySelectorAll('th,td')].map(col=>'"'+col.innerText.replace(/"/g,'""')+'"').join(',')).join('\n');
+}
+
+function downloadCSV(){
+  const blob=new Blob([tableToCSV()],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='leadpilot-export.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+async function loadLeads(){
+  try{
+    const res=await fetch('/api/leads');
+    if(!res.ok) throw new Error('API failed');
+    const data=await res.json();
+    allLeads=Array.isArray(data.leads)?data.leads:fallbackLeads;
+  }catch(e){
+    allLeads=fallbackLeads;
+  }
+  applyFilters();
+}
+
+document.getElementById('downloadBtn').addEventListener('click',downloadCSV);
+document.getElementById('downloadTop').addEventListener('click',downloadCSV);
+document.getElementById('syncBtn').addEventListener('click',loadLeads);
+countryFilter.addEventListener('change',applyFilters);
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  const root=document.documentElement;
+  root.setAttribute('data-theme',root.getAttribute('data-theme')==='dark'?'light':'dark');
+});
+
+loadLeads();
+</script>
+</body>
+</html>

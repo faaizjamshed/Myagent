@@ -10,43 +10,25 @@
   <style>:root,[data-theme="light"]{--bg:#f7f6f2;--surface:#f9f8f5;--surface-2:#fbfbf9;--border:#d4d1ca;--divider:#e2dfda;--text:#28251d;--muted:#7a7974;--primary:#01696f;--primary-hover:#0c4e54;--success:#437a22;--warning:#964219;--error:#a12c7b;--inv:#f9f8f4;--radius:18px;--shadow:0 12px 28px rgba(25,22,18,.08);--font-body:'Satoshi',sans-serif;--font-display:'Boska',serif}[data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--surface-2:#201f1d;--border:#393836;--divider:#2a2927;--text:#cdccca;--muted:#8c8a86;--primary:#4f98a3;--primary-hover:#227f8b;--success:#6daa45;--warning:#bb653b;--error:#d163a7;--inv:#171614;--shadow:0 12px 28px rgba(0,0,0,.28)}*{box-sizing:border-box}body{margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text)}a{text-decoration:none;color:inherit}button,input,select{font:inherit}.layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}.sidebar{padding:24px;background:color-mix(in oklab,var(--surface) 88%,var(--primary) 12%);border-right:1px solid var(--border)}.brand{display:flex;gap:12px;align-items:center;margin-bottom:24px}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--primary),#82c9c1);display:grid;place-items:center;color:white}.logo svg{width:22px;height:22px}.brand h1{font-family:var(--font-display);margin:0;font-size:28px}.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}.nav{display:grid;gap:8px}.nav a{padding:12px 14px;border-radius:14px;color:var(--muted)}.nav a:hover,.nav a.active{background:var(--surface-2);color:var(--text)}.main{padding:28px;display:grid;gap:20px}.hero,.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}.hero{padding:28px;display:grid;grid-template-columns:1fr 1fr;gap:24px}.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}.hero h2{font-family:var(--font-display);font-size:44px;line-height:.95;margin:0 0 12px;max-width:14ch}.hero p{color:var(--muted);max-width:64ch}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.btn{border:none;border-radius:999px;padding:12px 18px;min-height:44px;cursor:pointer}.btn-primary{background:var(--primary);color:var(--inv)}.btn-primary:hover{background:var(--primary-hover)}.btn-secondary{background:var(--surface-2);border:1px solid var(--border);color:var(--text)}.stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stat{padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2)}.stat .label{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.08em;font-weight:600}.stat .value{font-size:28px;font-weight:700;margin-top:4px;color:var(--text)}.grid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px}.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-4{grid-column:span 4}.card{padding:22px}.card h3{margin:0 0 14px;font-size:24px}.tiny{font-size:13px;color:var(--muted)}.toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.toolbar .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.field{padding:10px 12px;border:1px solid var(--border);background:var(--surface-2);border-radius:12px;color:var(--text)}.file-label{padding:10px 16px;background:var(--primary);color:var(--inv);border-radius:999px;cursor:pointer;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px}.file-label:hover{background:var(--primary-hover)}table{width:100%;border-collapse:collapse}th,td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--divider);font-size:14px;vertical-align:top}th{color:var(--muted);font-weight:600}.status{display:inline-flex;padding:5px 10px;border-radius:999px;font-size:12px}.ok{background:color-mix(in oklab,var(--success) 16%, var(--surface));color:var(--success)}.warn{background:color-mix(in oklab,var(--warning) 16%, var(--surface));color:var(--warning)}.err{background:color-mix(in oklab,var(--error) 16%, var(--surface));color:var(--error)}.list{display:grid;gap:12px}.item{padding:14px;border-radius:14px;border:1px solid var(--divider);background:var(--surface-2)}.footer{padding:16px 20px;border:1px solid var(--border);border-radius:16px;background:color-mix(in oklab,var(--primary) 8%, var(--surface))}@media (max-width:1100px){.layout{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.span-8,.span-4{grid-column:span 12}}@media (max-width:700px){.main,.sidebar{padding:16px}.hero h2{font-size:35px}.toolbar{align-items:stretch}}</style>
 </head>
 <body>
-<div class="layout"><aside class="sidebar"><div class="brand"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h7"/><path d="M4 7h12"/><path d="M4 17h10"/><circle cx="18" cy="12" r="3" fill="currentColor" stroke="none"/></svg></div><div><h1>LeadPilot</h1><p>Solo Agency Tracker</p></div></div><nav class="nav"><a class="active" href="#overview">Overview</a><a href="#leads">Leads</a><a href="#workflow">Workflow</a></nav><div style="margin-top:20px;display:grid;gap:12px;"><button class="btn btn-secondary" id="themeBtn">Toggle theme</button><button class="btn btn-primary" id="syncBtn">Refresh CRM</button></div></aside><main class="main"><section class="hero" id="overview"><div><div class="eyebrow">Solo Pilot Operations</div><h2>Automated Sales Performance</h2><p>Yeh board direct aapke Python script backend se local data aur live API sync data collect karta hai aur aapke outreach parameters auto-calculate karta hai.</p><div class="actions"><button class="btn btn-primary" id="downloadTop">Download Export</button></div></div>
-    
-    <div class="stats-grid">
-      <div class="stat" style="border-left: 4px solid var(--primary);">
-        <div class="label">Total Outreach (Sent)</div>
-        <div class="value" id="statSent">0</div>
-      </div>
-      <div class="stat" style="border-left: 4px solid var(--success);">
-        <div class="label">Projected Sales (2% CR)</div>
-        <div class="value" id="statSales">$0</div>
-      </div>
-      <div class="stat" style="border-left: 4px solid var(--warning);">
-        <div class="label">Monthly Target</div>
-        <div class="value" id="statTarget">$5,000</div>
-      </div>
-      <div class="stat" style="border-left: 4px solid var(--error);">
-        <div class="label">Days Left In Month</div>
-        <div class="value" id="statDays">0</div>
-      </div>
+<div class="layout"><aside class="sidebar"><div class="brand"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h7"/><path d="M4 7h12"/><path d="M4 17h10"/><circle cx="18" cy="12" r="3" fill="currentColor" stroke="none"/></svg></div><div><h1>LeadPilot</h1><p>Solo Agency Tracker</p></div></div><nav class="nav"><a class="active" href="#overview">Overview</a><a href="#leads">Leads</a><a href="#workflow">Workflow</a></nav><div style="margin-top:20px;display:grid;gap:12px;"><button class="btn btn-secondary" id="themeBtn">Toggle theme</button><button class="btn btn-primary" id="syncBtn">Refresh CRM</button></div></aside><main class="main"><section class="hero" id="overview"><div><div class="eyebrow">Solo Pilot Operations</div><h2>Automated Sales Performance</h2><p>Yeh board direct aapke Python script backend se local data aur live API sync data collect karta hai aur aapke outreach parameters auto-calculate karta hai.</p><div class="actions"><button class="btn btn-primary" id="downloadTop">Download Export</button></div></div><div class="stats-grid"><div class="stat" style="border-left: 4px solid var(--primary);"><div class="label">Total Outreach (Sent)</div><div class="value" id="statSent">0</div></div><div class="stat" style="border-left: 4px solid var(--success);"><div class="label">Projected Sales (2% CR)</div><div class="value" id="statSales">$0</div></div><div class="stat" style="border-left: 4px solid var(--warning);"><div class="label">Monthly Target</div><div class="value" id="statTarget">$5,000</div></div><div class="stat" style="border-left: 4px solid var(--error);"><div class="label">Days Left In Month</div><div class="value" id="statDays">0</div></div></div></section>
+
+  <section class="card span-12" style="background: color-mix(in oklab, var(--warning) 6%, var(--surface)); border: 1px dashed var(--warning);">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+      <h3 style="margin:0; font-size:20px; color:var(--warning); display:flex; align-items:center; gap:8px;">
+        <span style="display:inline-block; width:10px; height:10px; background:var(--error); border-radius:50%; animation: pulse 1.5s infinite;"></span>
+        📥 Live Gmail Client Responses (Hot Leads)
+      </h3>
+      <span class="tiny" style="font-weight:bold; color:var(--warning);" id="replyCount">0 New Messages</span>
+    </div>
+    <div id="liveInboxContainer" class="list" style="max-height: 180px; overflow-y: auto;">
+      <div class="item" style="text-align:center; color:var(--muted); font-style:italic; padding:10px;">No new replies detected yet. Running loops in background...</div>
     </div>
   </section>
 
-  <section class="grid" id="leads"><article class="card span-12"><div class="toolbar"><div><h3>All Extracted Pipeline Leads</h3><p class="tiny">Automated system pushes real time logs here.</p></div><div class="filters">
-        <label class="file-label" for="csvFileInput">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-          Import Scraped CSV
-        </label>
-        <input type="file" id="csvFileInput" accept=".csv" style="display:none;" />
+  <style>@keyframes pulse{0%{transform:scale(0.95);opacity:0.5;}50%{transform:scale(1.1);opacity:1;}100%{transform:scale(0.95);opacity:0.5;}}</style>
 
-        <select class="field" id="countryFilter"><option value="">All Regions</option><option value="USA">USA</option><option value="UK">UK</option><option value="Canada">Canada</option></select>
-        <button class="btn btn-secondary" id="downloadBtn">Download CSV</button></div></div><div style="overflow:auto;"><table id="leadsTable"><thead><tr><th>Business Name</th><th>Country</th><th>Address</th><th>Phone</th><th>Website</th><th>Site Condition</th><th>Email Status</th></tr></thead><tbody id="leadsBody"></tbody></table></div></article><article class="card span-8" id="workflow"><h3>Pipeline Operations Roadmap</h3><div class="list"><div class="item"><strong>Step 1:</strong> Background Engine scrapes 75 records across USA/UK/CA.</div><div class="item"><strong>Step 2:</strong> Immediate outbound cold pitch is dispatched via secure secure TLS app layer.</div><div class="item"><strong>Step 3:</strong> Live dashboard visualizes direct conversions based on outreach metric ratios.</div></div></article><article class="card span-4"><h3>Engine Status</h3><div class="list"><div class="item"><strong>Outreach Sync:</strong> Connected</div><div class="item"><strong>Cron Loop Trigger:</strong> 5 Hours Indefinitely</div><div class="item"><strong>Solo Target Base Price:</strong> $299 / £249</div></div></article></section></main></div>
+  <section class="grid" id="leads"><article class="card span-12"><div class="toolbar"><div><h3>All Extracted Pipeline Leads</h3><p class="tiny">Automated system pushes real time logs here.</p></div><div class="filters"><label class="file-label" for="csvFileInput"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg> Import Scraped CSV </label><input type="file" id="csvFileInput" accept=".csv" style="display:none;" /> <select class="field" id="countryFilter"><option value="">All Regions</option><option value="USA">USA</option><option value="UK">UK</option><option value="Canada">Canada</option></select> <button class="btn btn-secondary" id="downloadBtn">Download CSV</button></div></div><div style="overflow:auto;"><table id="leadsTable"><thead><tr><th>Business Name</th><th>Country</th><th>Address</th><th>Phone</th><th>Website</th><th>Site Condition</th><th>Email Status</th></tr></thead><tbody id="leadsBody"></tbody></table></div></article><article class="card span-8" id="workflow"><h3>Pipeline Operations Roadmap</h3><div class="list"><div class="item"><strong>Step 1:</strong> Background Engine scrapes 75 records across USA/UK/CA.</div><div class="item"><strong>Step 2:</strong> Immediate outbound cold pitch is dispatched via secure secure TLS app layer.</div><div class="item"><strong>Step 3:</strong> Live dashboard visualizes direct conversions based on outreach metric ratios.</div></div></article><article class="card span-4"><h3>Engine Status</h3><div class="list"><div class="item"><strong>Outreach Sync:</strong> Connected</div><div class="item"><strong>Cron Loop Trigger:</strong> 5 Hours Indefinitely</div><div class="item"><strong>Solo Target Base Price:</strong> $299 / £249</div></div></article></section></main></div>
 <script>
-const fallbackLeads=[
-  {business:'Prime Cut Barbers',country:'UK',address:'Manchester Street 14',phone:'+4416199',website:'primecutbarbers.co.uk',email:'hello@primecutbarbers.co.uk',condition:'Outdated (Old Copyright)',status:'Sent'},
-  {business:'Maple Core Fitness',country:'Canada',address:'Toronto Highway 5',phone:'+141688',website:'maplecorefitness.ca',email:'team@maplecorefitness.ca',condition:'Modern',status:'Sent'},
-  {business:'Urban Flame Kitchen',country:'USA',address:'Chicago Downtown',phone:'+131277',website:'urbanflamekitchen.com',email:'info@urbanflamekitchen.com',condition:'Outdated (No Viewport)',status:'Pending'}
-];
 let allLeads=[];
 const body=document.getElementById('leadsBody');
 const countryFilter=document.getElementById('countryFilter');
@@ -58,73 +40,74 @@ function statusClass(status){
   return 'err';
 }
 
-// Update the dynamic dashboard numbers
 function updateDashboardMetrics(leads) {
   let totalSent = 0;
   leads.forEach(lead => {
     const s = (lead.status || lead['Email Status'] || '').toLowerCase();
-    if (s.includes('sent')) {
-      totalSent++;
-    }
+    if (s.includes('sent')) totalSent++;
   });
-
-  // 2% safe Conversion Rate projection formula ($299 average ticket size)
   const projectedSales = Math.round(totalSent * 0.02) * 299;
-
-  // Render on DOM
   document.getElementById('statSent').innerText = totalSent;
   document.getElementById('statSales').innerText = '$' + projectedSales;
-
-  // Calculate Days left in current active month dynamically
   const now = new Date();
   const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  const daysLeft = totalDaysInMonth - now.getDate();
-  document.getElementById('statDays').innerText = daysLeft >= 0 ? daysLeft : 0;
+  document.getElementById('statDays').innerText = totalDaysInMonth - now.getDate();
 }
 
 function renderRows(rows){
   body.innerHTML='';
   rows.forEach(lead=>{
-    const bName = lead.business || lead['Business Name'] || 'N/A';
-    const bCountry = lead.country || lead['Country'] || 'N/A';
-    const bAddress = lead.address || lead['Address'] || 'N/A';
-    const bPhone = lead.phone || lead['Phone'] || 'N/A';
-    const bWebsite = lead.website || lead['Website'] || 'N/A';
-    const bEmail = lead.email || lead['Email'] || 'N/A';
-    const bCondition = lead.condition || lead['Site Condition'] || 'Unknown';
-    const bStatus = lead.status || lead['Email Status'] || 'Pending';
-
     const tr=document.createElement('tr');
     tr.innerHTML=`
-      <td><strong>${bName}</strong></td>
-      <td><span class="status style="background:#eee; color:#333;">${bCountry}</span></td>
-      <td class="tiny">${bAddress}</td>
-      <td>${bPhone}</td>
-      <td><a href="${bWebsite}" target="_blank" style="color:var(--primary);text-decoration:underline;">Link</a></td>
-      <td class="tiny">${bEmail}</td>
-      <td><span class="status ${statusClass(bCondition)}">${bCondition}</span></td>
-      <td><span class="status ${statusClass(bStatus)}">${bStatus}</span></td>
+      <td><strong>${lead.business||lead['Business Name']||'N/A'}</strong></td>
+      <td><span class="status">${lead.country||lead['Country']||'N/A'}</span></td>
+      <td class="tiny">${lead.address||lead['Address']||'N/A'}</td>
+      <td>${lead.phone||lead['Phone']||'N/A'}</td>
+      <td><a href="${lead.website||lead['Website']||'N/A'}" target="_blank" style="color:var(--primary);text-decoration:underline;">Link</a></td>
+      <td class="tiny">${lead.email||lead['Email']||'N/A'}</td>
+      <td><span class="status ${statusClass(lead.condition||lead['Site Condition'])}">${lead.condition||lead['Site Condition']||'Unknown'}</span></td>
+      <td><span class="status ${statusClass(lead.status||lead['Email Status'])}">${lead.status||lead['Email Status']||'Pending'}</span></td>
     `;
     body.appendChild(tr);
   });
 }
 
+function renderReplies(replies) {
+  const container = document.getElementById('liveInboxContainer');
+  const countBadge = document.getElementById('replyCount');
+  if(!replies || replies.length === 0) return;
+  
+  container.innerHTML = '';
+  countBadge.innerText = `${replies.length} Hot Replies`;
+  
+  replies.forEach(reply => {
+    const div = document.createElement('div');
+    div.className = 'item';
+    div.style.borderLeft = "4px solid var(--error)";
+    div.style.background = "var(--surface)";
+    div.innerHTML = `
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <strong>📧 ${reply.sender}</strong>
+        <span class="tiny" style="color:var(--error); font-weight:bold;">Reply Received</span>
+      </div>
+      <div class="tiny" style="color:var(--text); font-weight:500; margin-bottom:4px;"><strong>Subject:</strong> ${reply.subject}</div>
+      <p style="margin:0; font-size:13px; color:var(--muted); background:var(--bg); padding:8px; border-radius:6px;">"${reply.snippet}"</p>
+    `;
+    container.appendChild(div);
+  });
+}
+
 function applyFilters() {
   const selectedLocation = countryFilter.value.toLowerCase();
-  if (!selectedLocation) {
-    renderRows(allLeads);
-    return;
-  }
+  if (!selectedLocation) { renderRows(allLeads); return; }
   const filtered = allLeads.filter(x => {
     const cntry = (x.country || x['Country'] || '').toLowerCase();
     const addr = (x.address || x['Address'] || '').toLowerCase();
-    const web = (x.website || x['Website'] || '').toLowerCase();
-    return cntry === selectedLocation || addr.includes(selectedLocation) || web.includes('.' + selectedLocation);
+    return cntry === selectedLocation || addr.includes(selectedLocation);
   });
   renderRows(filtered);
 }
 
-// Local File Upload parsing logic connection
 document.getElementById('csvFileInput').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -146,13 +129,8 @@ function tableToCSV(){
 function downloadCSV(){
   const blob=new Blob([tableToCSV()],{type:'text/csv;charset=utf-8;'});
   const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download='leadpilot-pipeline.csv';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  URL.revokeObjectURL(url);
+  const a=document.createElement('a'); a.href=url; a.download='leadpilot-pipeline.csv';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
 async function loadLeads(){
@@ -160,10 +138,9 @@ async function loadLeads(){
     const res=await fetch('/api/leads');
     if(!res.ok) throw new Error('API failed');
     const data=await res.json();
-    allLeads=Array.isArray(data.leads)?data.leads:fallbackLeads;
-  }catch(e){
-    allLeads=fallbackLeads;
-  }
+    allLeads=Array.isArray(data.leads)?data.leads:[];
+    if(data.replies) renderReplies(data.replies);
+  }catch(e){}
   updateDashboardMetrics(allLeads);
   applyFilters();
 }
@@ -178,6 +155,8 @@ document.getElementById('themeBtn').addEventListener('click',()=>{
 });
 
 loadLeads();
+// Auto refresh UI every 30 seconds to catch new incoming emails pushed by python background task
+setInterval(loadLeads, 30000);
 </script>
 </body>
 </html>

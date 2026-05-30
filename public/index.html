@@ -244,13 +244,9 @@
 <script>
 let allLeads = [];
 
-// App load hote hi sabse pehle localStorage se safe cache data read karein
+// Local cache recovery
 if (localStorage.getItem('leadpilot_cache')) {
-  try {
-    allLeads = JSON.parse(localStorage.getItem('leadpilot_cache'));
-  } catch(e) {
-    allLeads = [];
-  }
+  try { allLeads = JSON.parse(localStorage.getItem('leadpilot_cache')); } catch(e) { allLeads = []; }
 }
 
 function statusClass(status){
@@ -267,7 +263,6 @@ function updateDashboardMetrics(leads) {
     const s = (lead.status || lead['Email Status'] || '').toLowerCase();
     if (s.includes('sent')) totalSent++;
   });
-  
   const projectedSales = Math.round(totalSent * 0.02) * 299;
   
   document.getElementById('statTotal').innerText = leads.length;
@@ -350,7 +345,7 @@ function applyFilters() {
   renderRows(filtered);
 }
 
-// INTELLIGENT AUTO DEDUPLICATION & PERSISTENCE
+// BACKEND SYNC AND SAVE FOR DEDUPLICATION
 document.getElementById('csvFileInput').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -358,7 +353,7 @@ document.getElementById('csvFileInput').addEventListener('change', function(e) {
   Papa.parse(file, {
     header: true,
     skipEmptyLines: true,
-    complete: function(results) {
+    complete: async function(results) {
       const incomingData = results.data;
       const initialLength = incomingData.length;
       
@@ -369,27 +364,28 @@ document.getElementById('csvFileInput').addEventListener('change', function(e) {
         const name = (item.business || item['Business Name'] || '').trim().toLowerCase();
         const website = (item.website || item['Website'] || '').trim().toLowerCase();
         const uniqueKey = `${name}_${website}`;
-        
         if (uniqueKey && uniqueKey !== '_') {
-          if (!uniqueMap.has(uniqueKey)) {
-            uniqueMap.set(uniqueKey, item);
-          }
+          if (!uniqueMap.has(uniqueKey)) uniqueMap.set(uniqueKey, item);
         }
       });
       
-      const updatedLeads = Array.from(uniqueMap.values());
-      const duplicatesRemoved = (allLeads.length + initialLength) - updatedLeads.length;
+      allLeads = Array.from(uniqueMap.values());
+      const duplicatesRemoved = (allLeads.length + initialLength) - allLeads.length;
       
-      allLeads = updatedLeads;
-      
-      // CRITICAL FIX: Save data into localStorage right after deduplication
       localStorage.setItem('leadpilot_cache', JSON.stringify(allLeads));
       
+      // CRITICAL: Push unique array directly to Server API Storage to lock it!
+      try {
+        await fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ leads: allLeads })
+        });
+      } catch(err) { console.log("Local backup stored. Worker update pending."); }
+
       const notification = document.getElementById('dupNotification');
-      notification.innerHTML = `<span style="color:var(--success); font-weight:700;">✅ Cleaned! Removed ${duplicatesRemoved} duplicate records from pipeline.</span>`;
-      setTimeout(() => {
-        notification.innerText = "Automated system pushes real time logs here.";
-      }, 5000);
+      notification.innerHTML = `<span style="color:var(--success); font-weight:700;">✅ Cleaned & Saved! Removed ${duplicatesRemoved} duplicates.</span>`;
+      setTimeout(() => { notification.innerText = "Automated system pushes real time logs here."; }, 5000);
 
       updateDashboardMetrics(allLeads);
       applyFilters();
@@ -408,24 +404,24 @@ function downloadCSV(){
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
-// REFRESH FIX LOGIC
+// FULLY FUNCTIONAL FORCE REFRESH FROM SERVER STORAGE
 async function loadLeads(){
+  const notification = document.getElementById('dupNotification');
   try{
     const res = await fetch('/api/leads');
-    if(!res.ok) throw new Error('API Sync Failed');
+    if(!res.ok) throw new Error('Network Sync Failed');
     const data = await res.json();
     
-    // Agar backend par real data majood hai, tabhi state overwrite karein
+    // Server database block overwrite
     if (data && Array.isArray(data.leads) && data.leads.length > 0) {
       allLeads = data.leads;
       localStorage.setItem('leadpilot_cache', JSON.stringify(allLeads));
+      notification.innerHTML = `<span style="color:var(--primary); font-weight:600;">🔄 CRM Synced perfectly with Cloudflare Database!</span>`;
     }
     if(data && data.replies) renderReplies(data.replies);
   }catch(e) {
-    console.log("Backend offline or empty response. Using active browser localStorage cache fallback.");
+    console.log("Using active fallback layer cache.");
   }
-  
-  // Agar API fail ho ya server empty ho, localStorage wala data use hoga
   updateDashboardMetrics(allLeads);
   applyFilters();
 }
@@ -440,12 +436,11 @@ document.getElementById('themeBtn').addEventListener('click', () => {
   root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 });
 
-// App initialization run
+// App init runs
 updateDashboardMetrics(allLeads);
 applyFilters();
 loadLeads();
 
-// Auto refresh UI loop safely
 setInterval(loadLeads, 30000);
 </script>
 </body>

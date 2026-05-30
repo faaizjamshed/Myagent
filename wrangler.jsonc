@@ -1,6 +1,6 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "leadpilot-cloudflare",
+  "name": "leadpilot-fixed-dashboard",
   "main": "worker.js",
   "compatibility_date": "2026-05-30",
   "assets": {

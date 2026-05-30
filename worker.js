@@ -1,7 +1,7 @@
 export default {
   async fetch(request, env, ctx) {
     const url = new URL(request.url);
-
+    
     // CORS Headers handling
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
@@ -13,7 +13,7 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
-    // Check if KV is bound correctly
+    // 🛡️ Guardrail Check: Check if KV is bound correctly
     if (!env.LEADPILOT_KV) {
       return new Response(JSON.stringify({ error: "KV Namespace binding 'LEADPILOT_KV' is missing in wrangler.toml!" }), { 
         status: 500, 
@@ -21,10 +21,12 @@ export default {
       });
     }
 
-    // 1. ENDPOINT TO ACCEPT POST DATA (From Python Scraper or Frontend Upload)
+    // 1. ENDPOINT TO ACCEPT POST DATA (Handles both Bulk Python Sync & Single Button Clicks)
     if (url.pathname === "/api/leads" && request.method === "POST") {
       try {
         const body = await request.json();
+        
+        // CASE A: Bulk Upload / Python Engine Sync
         if (body && Array.isArray(body.leads)) {
           const incomingLeads = body.leads;
 
@@ -38,6 +40,9 @@ export default {
             const newWebsite = (newLead.website || newLead['Website'] || '').trim().toLowerCase();
             const newName = (newLead.business || newLead['Business Name'] || '').trim().toLowerCase();
 
+            // FIX: Dono fields ko support karein taake Python aur Frontend dono sync rahein
+            const updatedStatus = newLead.status || newLead['Email Status'] || 'Pending';
+
             let foundIdx = currentLeadsStore.findIndex(existing => {
               const exWeb = (existing.website || existing['Website'] || '').trim().toLowerCase();
               const exName = (existing.business || existing['Business Name'] || '').trim().toLowerCase();
@@ -45,15 +50,20 @@ export default {
             });
 
             if (foundIdx === -1) {
-              // Agar nayi lead hai to push karein
+              // Normalize data properties for Frontend uniformity
+              newLead.status = updatedStatus;
               currentLeadsStore.push(newLead);
             } else {
-              // Agar lead pehle se hai, to status aur fields update karein
-              currentLeadsStore[foundIdx] = { ...currentLeadsStore[foundIdx], ...newLead };
+              // Agar lead pehle se hai, to data merge karein aur status force update karein
+              currentLeadsStore[foundIdx] = { 
+                ...currentLeadsStore[foundIdx], 
+                ...newLead,
+                status: updatedStatus 
+              };
             }
           });
 
-          // UPDATE COLD DATABASE: Ab hamesha ke liye KV database mein lock kar dein
+          // Permanent lock into KV database
           await env.LEADPILOT_KV.put("leads_database", JSON.stringify(currentLeadsStore));
           
           return new Response(JSON.stringify({ 
@@ -65,20 +75,39 @@ export default {
             headers: { "Content-Type": "application/json", ...corsHeaders }
           });
         }
-        return new Response(JSON.stringify({ error: "Invalid layout array format" }), { status: 400, headers: corsHeaders });
+        
+        // CASE B: SINGLE LEAD UPDATE (Jab frontend dashboard se manual button click ho)
+        if (body && body.action === "update_status") {
+          const storedData = await env.LEADPILOT_KV.get("leads_database");
+          let currentLeadsStore = storedData ? JSON.parse(storedData) : [];
+          
+          let found = currentLeadsStore.find(l => (l.business === body.business || l['Business Name'] === body.business));
+          if (found) {
+            found.status = body.status; // Directly change status to 'Sent'
+            await env.LEADPILOT_KV.put("leads_database", JSON.stringify(currentLeadsStore));
+            return new Response(JSON.stringify({ success: true, message: "Status updated directly from Dashboard!" }), { 
+              status: 200, 
+              headers: { "Content-Type": "application/json", ...corsHeaders } 
+            });
+          } else {
+            return new Response(JSON.stringify({ error: "Lead not found in database" }), { status: 404, headers: corsHeaders });
+          }
+        }
+
+        return new Response(JSON.stringify({ error: "Invalid format payload" }), { status: 400, headers: corsHeaders });
       } catch (err) {
         return new Response(JSON.stringify({ error: err.message }), { status: 500, headers: corsHeaders });
       }
     }
 
-    // 2. ENDPOINT FOR FRONTEND INTERFACE (To read current leads safely)
+    // 2. ENDPOINT FOR FRONTEND INTERFACE (To read current database safely with Mock Feed)
     if (url.pathname === "/api/leads" && request.method === "GET") {
       try {
         // Direct KV storage se permanent data pull karein
         const storedData = await env.LEADPILOT_KV.get("leads_database");
         const leadsArray = storedData ? JSON.parse(storedData) : [];
 
-        // Mock hot email responses for the inbox feed card container
+        // ✅ FIXED: Mock responses are now fully restored for the dashboard hot leads feed card
         const mockReplies = [
           { 
             sender: "info@vancouverdining.ca", 

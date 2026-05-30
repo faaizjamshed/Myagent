@@ -94,6 +94,32 @@
     .err{background:color-mix(in oklab,var(--error) 16%, var(--surface));color:var(--error)}
     .list{display:grid;gap:12px}
     .item{padding:14px;border-radius:14px;border:1px solid var(--divider);background:var(--surface-2)}
+    
+    /* 📧 Manual Outreach Button Custom CSS Styles */
+    .send-email-btn {
+      background: var(--primary);
+      color: var(--inv);
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.2s ease;
+    }
+    .send-email-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+    .disabled-action-text {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 500;
+    }
+
     @keyframes pulse{0%{transform:scale(0.95);opacity:0.5;}50%{transform:scale(1.1);opacity:1;}100%{transform:scale(0.95);opacity:0.5;}}
     @media (max-width:1100px){.layout{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.span-8,.span-4{grid-column:span 12}}
     @media (max-width:700px){.main,.sidebar{padding:16px}.hero h2{font-size:35px}.toolbar{align-items:stretch}}
@@ -213,7 +239,7 @@
                 <th>Email Contact</th>
                 <th>Site Condition</th>
                 <th>Email Status</th>
-              </tr>
+                <th>Action</th> </tr>
             </thead>
             <tbody id="leadsBody"></tbody>
           </table>
@@ -263,7 +289,9 @@ function updateDashboardMetrics(leads) {
     const s = (lead.status || lead['Email Status'] || '').toLowerCase();
     if (s.includes('sent')) totalSent++;
   });
-  const projectedSales = Math.round(totalSent * 0.02) * 299;
+  
+  // Real-time counter math calculation update
+  const projectedSales = totalSent * 299;
   
   document.getElementById('statTotal').innerText = leads.length;
   document.getElementById('statSent').innerText = totalSent;
@@ -287,6 +315,14 @@ function renderRows(rows){
     const condition = lead.condition || lead['Site Condition'] || 'Unknown';
     const status = lead.status || lead['Email Status'] || 'Pending';
 
+    // Button Generation Check Engine logic
+    let actionButtonHTML = '';
+    if (status.toLowerCase().includes('pending') && email !== 'N/A' && email !== '') {
+      actionButtonHTML = `<button class="send-email-btn" onclick="triggerManualOutreach('${name.replace(/'/g, "\\'")}', '${email}', '${website}')">📧 Send</button>`;
+    } else {
+      actionButtonHTML = `<span class="disabled-action-text">-</span>`;
+    }
+
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><strong>${name}</strong></td>
@@ -297,6 +333,7 @@ function renderRows(rows){
       <td class="tiny" style="word-break:break-all;">${email}</td>
       <td><span class="status ${statusClass(condition)}">${condition}</span></td>
       <td><span class="status ${statusClass(status)}">${status}</span></td>
+      <td>${actionButtonHTML}</td>
     `;
     body.appendChild(tr);
   });
@@ -331,6 +368,47 @@ function renderReplies(replies) {
     `;
     container.appendChild(div);
   });
+}
+
+// FRONTEND INTERACTION: MANUAL OUTREACH LIVE SYNCHRONIZATION FUNCTION
+async function triggerManualOutreach(businessName, email, website) {
+  if (confirm(`Kya aap ${businessName} ko manual outreach list me mark karna chahte hain?`)) {
+    try {
+      // POST Request pushing directly to server api instance
+      const response = await fetch('/api/leads', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: "update_status",
+          business: businessName,
+          status: "Sent"
+        })
+      });
+      
+      if (response.ok) {
+        // Update state across local state object array safely
+        allLeads.forEach(lead => {
+          const name = lead.business || lead['Business Name'] || '';
+          if (name === businessName) {
+            if(lead.status) lead.status = "Sent";
+            if(lead['Email Status']) lead['Email Status'] = "Sent";
+          }
+        });
+
+        // Sync state back to local cache instantly
+        localStorage.setItem('leadpilot_cache', JSON.stringify(allLeads));
+        
+        // Render dynamic changes instantly without whole page jitter
+        updateDashboardMetrics(allLeads);
+        applyFilters();
+      } else {
+        alert("Server failed to lock status change. Try clicking Refresh CRM.");
+      }
+    } catch(err) {
+      console.error("Outreach API sync failed:", err);
+      alert("Could not connect to database endpoint.");
+    }
+  }
 }
 
 function applyFilters() {

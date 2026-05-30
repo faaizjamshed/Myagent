@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "myagent",
+  "main": "worker.js",
+  "compatibility_date": "2026-05-30",
+  "assets": {
+    "directory": "./public",
+    "binding": "ASSETS"
+  },
+  "kv_namespaces": [
+    {
+      "binding": "LEADS_KV",
+      "id": "7cff35b6f9cd4ed5895ab456a0e69f71"
+    }
+  ]
+}

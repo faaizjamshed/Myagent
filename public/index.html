@@ -244,6 +244,15 @@
 <script>
 let allLeads = [];
 
+// App load hote hi sabse pehle localStorage se safe cache data read karein
+if (localStorage.getItem('leadpilot_cache')) {
+  try {
+    allLeads = JSON.parse(localStorage.getItem('leadpilot_cache'));
+  } catch(e) {
+    allLeads = [];
+  }
+}
+
 function statusClass(status){
   if(!status) return 'err';
   const s = status.toLowerCase();
@@ -261,8 +270,7 @@ function updateDashboardMetrics(leads) {
   
   const projectedSales = Math.round(totalSent * 0.02) * 299;
   
-  // Update dynamic values inside DOM elements
-  document.getElementById('statTotal').innerText = leads.length; // Real-time unique leads calculation
+  document.getElementById('statTotal').innerText = leads.length;
   document.getElementById('statSent').innerText = totalSent;
   document.getElementById('statSales').innerText = '$' + projectedSales;
   
@@ -342,7 +350,7 @@ function applyFilters() {
   renderRows(filtered);
 }
 
-// INTELLIGENT AUTO DEDUPLICATION PARSING CORE
+// INTELLIGENT AUTO DEDUPLICATION & PERSISTENCE
 document.getElementById('csvFileInput').addEventListener('change', function(e) {
   const file = e.target.files[0];
   if (!file) return;
@@ -354,18 +362,15 @@ document.getElementById('csvFileInput').addEventListener('change', function(e) {
       const incomingData = results.data;
       const initialLength = incomingData.length;
       
-      // Combine state storage layers safely
       let combinedLeads = [...allLeads, ...incomingData];
-      
-      // Deduplicate loop using Map (keyed on unique fields combo: Name + Website)
       const uniqueMap = new Map();
+      
       combinedLeads.forEach(item => {
         const name = (item.business || item['Business Name'] || '').trim().toLowerCase();
         const website = (item.website || item['Website'] || '').trim().toLowerCase();
         const uniqueKey = `${name}_${website}`;
         
         if (uniqueKey && uniqueKey !== '_') {
-          // Keep existing item if already present to retain 'Sent' status flags
           if (!uniqueMap.has(uniqueKey)) {
             uniqueMap.set(uniqueKey, item);
           }
@@ -377,7 +382,9 @@ document.getElementById('csvFileInput').addEventListener('change', function(e) {
       
       allLeads = updatedLeads;
       
-      // Notify user about auto cleanup
+      // CRITICAL FIX: Save data into localStorage right after deduplication
+      localStorage.setItem('leadpilot_cache', JSON.stringify(allLeads));
+      
       const notification = document.getElementById('dupNotification');
       notification.innerHTML = `<span style="color:var(--success); font-weight:700;">✅ Cleaned! Removed ${duplicatesRemoved} duplicate records from pipeline.</span>`;
       setTimeout(() => {
@@ -401,16 +408,24 @@ function downloadCSV(){
   document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
 }
 
+// REFRESH FIX LOGIC
 async function loadLeads(){
   try{
     const res = await fetch('/api/leads');
     if(!res.ok) throw new Error('API Sync Failed');
     const data = await res.json();
-    allLeads = Array.isArray(data.leads) ? data.leads : [];
-    if(data.replies) renderReplies(data.replies);
-  }catch(e){
-    console.log("Using dynamic view layout.");
+    
+    // Agar backend par real data majood hai, tabhi state overwrite karein
+    if (data && Array.isArray(data.leads) && data.leads.length > 0) {
+      allLeads = data.leads;
+      localStorage.setItem('leadpilot_cache', JSON.stringify(allLeads));
+    }
+    if(data && data.replies) renderReplies(data.replies);
+  }catch(e) {
+    console.log("Backend offline or empty response. Using active browser localStorage cache fallback.");
   }
+  
+  // Agar API fail ho ya server empty ho, localStorage wala data use hoga
   updateDashboardMetrics(allLeads);
   applyFilters();
 }
@@ -425,9 +440,12 @@ document.getElementById('themeBtn').addEventListener('click', () => {
   root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
 });
 
-// Initial load
+// App initialization run
+updateDashboardMetrics(allLeads);
+applyFilters();
 loadLeads();
-// Auto refresh UI loop every 30 seconds
+
+// Auto refresh UI loop safely
 setInterval(loadLeads, 30000);
 </script>
 </body>

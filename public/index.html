@@ -3,523 +3,175 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LeadPilot Studio</title>
-  <meta name="description" content="LeadPilot full-stack starter for lead management and CSV export on Cloudflare." />
+  <title>LeadPilot Fixed Dashboard</title>
+  <meta name="description" content="Stable lead dashboard with CSV import, dedupe, filtering and export." />
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&f[]=boska@400,500,700&display=swap" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <style>
-    :root,[data-theme="light"]{
-      --bg:#f7f6f2;
-      --surface:#f9f8f5;
-      --surface-2:#fbfbf9;
-      --border:#d4d1ca;
-      --divider:#e2dfda;
-      --text:#28251d;
-      --muted:#7a7974;
-      --primary:#01696f;
-      --primary-hover:#0c4e54;
-      --success:#437a22;
-      --warning:#964219;
-      --error:#a12c7b;
-      --inv:#f9f8f4;
-      --radius:18px;
-      --shadow:0 12px 28px rgba(25,22,18,.08);
-      --font-body:'Satoshi',sans-serif;
-      --font-display:'Boska',serif
-    }
-    [data-theme="dark"]{
-      --bg:#171614;
-      --surface:#1c1b19;
-      --surface-2:#201f1d;
-      --border:#393836;
-      --divider:#2a2927;
-      --text:#cdccca;
-      --muted:#8c8a86;
-      --primary:#4f98a3;
-      --primary-hover:#227f8b;
-      --success:#6daa45;
-      --warning:#bb653b;
-      --error:#d163a7;
-      --inv:#171614;
-      --shadow:0 12px 28px rgba(0,0,0,.28)
-    }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text)}
-    a{text-decoration:none;color:inherit}
-    button,input,select{font:inherit}
-    .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
-    .sidebar{padding:24px;background:color-mix(in oklab,var(--surface) 88%,var(--primary) 12%);border-right:1px solid var(--border)}
-    .brand{display:flex;gap:12px;align-items:center;margin-bottom:24px}
-    .logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--primary),#82c9c1);display:grid;place-items:center;color:white}
-    .logo svg{width:22px;height:22px}
-    .brand h1{font-family:var(--font-display);margin:0;font-size:28px}
-    .brand p{margin:2px 0 0;color:var(--muted);font-size:13px}
-    .nav{display:grid;gap:8px}
-    .nav a{padding:12px 14px;border-radius:14px;color:var(--muted)}
-    .nav a:hover,.nav a.active{background:var(--surface-2);color:var(--text)}
-    .main{padding:28px;display:grid;gap:20px}
-    .hero,.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}
-    .hero{padding:28px;display:grid;grid-template-columns:1fr 1.2fr;gap:24px}
-    .eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-    .hero h2{font-family:var(--font-display);font-size:44px;line-height:.95;margin:0 0 12px;max-width:14ch}
-    .hero p{color:var(--muted);max-width:64ch}
-    .actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}
-    .btn{border:none;border-radius:999px;padding:12px 18px;min-height:44px;cursor:pointer}
-    .btn-primary{background:var(--primary);color:var(--inv)}
-    .btn-primary:hover{background:var(--primary-hover)}
-    .btn-secondary{background:var(--surface-2);border:1px solid var(--border);color:var(--text)}
-    .stats-container {display: flex; flex-direction: column; gap: 12px;}
-    .stats-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-    .stat{padding:16px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2)}
-    .stat .label{font-size:11px;text-transform:uppercase;color:var(--muted);letter-spacing:.08em;font-weight:600}
-    .stat .value{font-size:28px;font-weight:700;margin-top:4px;color:var(--text)}
-    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px}
-    .span-12{grid-column:span 12}
-    .span-8{grid-column:span 8}
-    .span-4{grid-column:span 4}
-    .card{padding:22px}
-    .card h3{margin:0 0 14px;font-size:24px}
-    .tiny{font-size:13px;color:var(--muted)}
-    .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
-    .toolbar .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-    .field{padding:10px 12px;border:1px solid var(--border);background:var(--surface-2);border-radius:12px;color:var(--text)}
-    .file-label{padding:10px 16px;background:var(--primary);color:var(--inv);border-radius:999px;cursor:pointer;font-size:14px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
-    .file-label:hover{background:var(--primary-hover)}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--divider);font-size:14px;vertical-align:top}
-    th{color:var(--muted);font-weight:600}
-    .status{display:inline-flex;padding:5px 10px;border-radius:999px;font-size:12px}
-    .ok{background:color-mix(in oklab,var(--success) 16%, var(--surface));color:var(--success)}
-    .warn{background:color-mix(in oklab,var(--warning) 16%, var(--surface));color:var(--warning)}
-    .err{background:color-mix(in oklab,var(--error) 16%, var(--surface));color:var(--error)}
-    .list{display:grid;gap:12px}
-    .item{padding:14px;border-radius:14px;border:1px solid var(--divider);background:var(--surface-2)}
-    
-    /* 📧 Manual Outreach Button Custom CSS Styles */
-    .send-email-btn {
-      background: var(--primary);
-      color: var(--inv);
-      border: none;
-      padding: 6px 14px;
-      border-radius: 8px;
-      font-size: 12px;
-      font-weight: 700;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.2s ease;
-    }
-    .send-email-btn:hover {
-      background: var(--primary-hover);
-      transform: translateY(-1px);
-    }
-    .disabled-action-text {
-      color: var(--muted);
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    @keyframes pulse{0%{transform:scale(0.95);opacity:0.5;}50%{transform:scale(1.1);opacity:1;}100%{transform:scale(0.95);opacity:0.5;}}
+    :root,[data-theme="light"]{--bg:#f7f6f2;--surface:#f9f8f5;--surface-2:#fbfbf9;--border:#d4d1ca;--divider:#e2dfda;--text:#28251d;--muted:#7a7974;--primary:#01696f;--primary-hover:#0c4e54;--success:#437a22;--warning:#964219;--error:#a12c7b;--inv:#f9f8f4;--radius:18px;--shadow:0 12px 28px rgba(25,22,18,.08);--font-body:'Satoshi',sans-serif;--font-display:'Boska',serif}
+    [data-theme="dark"]{--bg:#171614;--surface:#1c1b19;--surface-2:#201f1d;--border:#393836;--divider:#2a2927;--text:#cdccca;--muted:#8c8a86;--primary:#4f98a3;--primary-hover:#227f8b;--success:#6daa45;--warning:#bb653b;--error:#d163a7;--inv:#171614;--shadow:0 12px 28px rgba(0,0,0,.28)}
+    *{box-sizing:border-box} body{margin:0;font-family:var(--font-body);background:var(--bg);color:var(--text)} a{text-decoration:none;color:inherit} button,input,select,textarea{font:inherit}
+    .layout{display:grid;grid-template-columns:260px 1fr;min-height:100vh}.sidebar{padding:24px;background:color-mix(in oklab,var(--surface) 88%,var(--primary) 12%);border-right:1px solid var(--border)}.brand{display:flex;gap:12px;align-items:center;margin-bottom:24px}.logo{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--primary),#82c9c1);display:grid;place-items:center;color:white}.logo svg{width:22px;height:22px}.brand h1{font-family:var(--font-display);margin:0;font-size:28px}.brand p{margin:2px 0 0;color:var(--muted);font-size:13px}.nav{display:grid;gap:8px}.nav a{padding:12px 14px;border-radius:14px;color:var(--muted)}.nav a:hover,.nav a.active{background:var(--surface-2);color:var(--text)}
+    .main{padding:28px;display:grid;gap:20px}.hero,.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow)}.hero{padding:28px;display:grid;grid-template-columns:1.2fr .9fr;gap:20px}.eyebrow{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}.hero h2{font-family:var(--font-display);font-size:48px;line-height:.96;margin:0 0 12px;max-width:11ch}.hero p{color:var(--muted);max-width:64ch}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:18px}.btn{border:none;border-radius:999px;padding:12px 18px;min-height:44px;cursor:pointer}.btn-primary{background:var(--primary);color:var(--inv)}.btn-primary:hover{background:var(--primary-hover)}.btn-secondary{background:var(--surface-2);border:1px solid var(--border);color:var(--text)}
+    .stats{display:grid;gap:12px}.stat{padding:18px;border:1px solid var(--border);border-radius:16px;background:var(--surface-2)}.stat .label{font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.08em}.stat .value{font-size:30px;font-weight:700;margin-top:6px}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:20px}.span-12{grid-column:span 12}.span-8{grid-column:span 8}.span-4{grid-column:span 4}.card{padding:22px}.card h3{margin:0 0 14px;font-size:24px}.tiny{font-size:13px;color:var(--muted)}
+    .toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.toolbar .filters{display:flex;gap:10px;flex-wrap:wrap}.field{padding:10px 12px;border:1px solid var(--border);background:var(--surface-2);border-radius:12px;color:var(--text)}
+    table{width:100%;border-collapse:collapse} th,td{padding:12px 10px;text-align:left;border-bottom:1px solid var(--divider);font-size:14px;vertical-align:top} th{color:var(--muted);font-weight:600} .status{display:inline-flex;padding:5px 10px;border-radius:999px;font-size:12px}.ok{background:color-mix(in oklab,var(--success) 16%, var(--surface));color:var(--success)}.warn{background:color-mix(in oklab,var(--warning) 16%, var(--surface));color:var(--warning)}.err{background:color-mix(in oklab,var(--error) 16%, var(--surface));color:var(--error)}
+    .list{display:grid;gap:12px}.item{padding:14px;border-radius:14px;border:1px solid var(--divider);background:var(--surface-2)}
+    .uploader{display:grid;gap:10px}.textarea{width:100%;min-height:120px;padding:12px;border:1px solid var(--border);background:var(--surface-2);border-radius:12px;color:var(--text)}
+    .footer{padding:16px 20px;border:1px solid var(--border);border-radius:16px;background:color-mix(in oklab,var(--primary) 8%, var(--surface))}
     @media (max-width:1100px){.layout{grid-template-columns:1fr}.hero{grid-template-columns:1fr}.span-8,.span-4{grid-column:span 12}}
-    @media (max-width:700px){.main,.sidebar{padding:16px}.hero h2{font-size:35px}.toolbar{align-items:stretch}}
+    @media (max-width:700px){.main,.sidebar{padding:16px}.hero h2{font-size:38px}.toolbar{align-items:stretch}}
   </style>
 </head>
 <body>
 <div class="layout">
   <aside class="sidebar">
-    <div class="brand">
-      <div class="logo">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 12h7"/><path d="M4 7h12"/><path d="M4 17h10"/><circle cx="18" cy="12" r="3" fill="currentColor" stroke="none"/>
-        </svg>
-      </div>
-      <div>
-        <h1>LeadPilot</h1>
-        <p>Solo Agency Tracker</p>
-      </div>
-    </div>
-    <nav class="nav">
-      <a class="active" href="#overview">Overview</a>
-      <a href="#leads">Leads</a>
-      <a href="#workflow">Workflow</a>
-    </nav>
-    <div style="margin-top:20px;display:grid;gap:12px;">
-      <button class="btn btn-secondary" id="themeBtn">Toggle theme</button>
-      <button class="btn btn-primary" id="syncBtn">Refresh CRM</button>
-    </div>
+    <div class="brand"><div class="logo"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12h7"/><path d="M4 7h12"/><path d="M4 17h10"/><circle cx="18" cy="12" r="3" fill="currentColor" stroke="none"/></svg></div><div><h1>LeadPilot</h1><p>Stable working dashboard</p></div></div>
+    <nav class="nav"><a class="active" href="#overview">Overview</a><a href="#leads">Leads</a><a href="#import">Import</a><a href="#notes">Notes</a></nav>
+    <div style="margin-top:20px;display:grid;gap:12px;"><button class="btn btn-secondary" id="themeBtn">Toggle theme</button><button class="btn btn-primary" id="seedBtn">Load sample leads</button></div>
   </aside>
-
   <main class="main">
-    <section class="hero" id="overview">
-      <div>
-        <div class="eyebrow">Solo Pilot Operations</div>
-        <h2>Automated Sales Performance</h2>
-        <p>Yeh board direct aapke Python script backend se local data aur live API sync data collect karta hai aur aapke outreach parameters auto-calculate karta hai.</p>
-        <div class="actions">
-          <button class="btn btn-primary" id="downloadTop">Download Export</button>
-        </div>
-      </div>
-      
-      <div class="stats-container">
-        <div class="stat" style="border-left: 4px solid var(--text); background: var(--surface);">
-          <div class="label" style="letter-spacing: 0.1em; font-weight: 700;">📂 Total Pipeline Unique Leads</div>
-          <div class="value" id="statTotal" style="font-size: 34px;">0</div>
-        </div>
-        
-        <div class="stats-grid">
-          <div class="stat" style="border-left: 4px solid var(--primary);">
-            <div class="label">Total Outreach (Sent)</div>
-            <div class="value" id="statSent">0</div>
-          </div>
-          <div class="stat" style="border-left: 4px solid var(--success);">
-            <div class="label">Projected Sales (2% CR)</div>
-            <div class="value" id="statSales">$0</div>
-          </div>
-          <div class="stat" style="border-left: 4px solid var(--warning);">
-            <div class="label">Monthly Target</div>
-            <div class="value" id="statTarget">$5,000</div>
-          </div>
-          <div class="stat" style="border-left: 4px solid var(--error);">
-            <div class="label">Days Left In Month</div>
-            <div class="value" id="statDays">0</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section class="card span-12" style="background: color-mix(in oklab, var(--warning) 4%, var(--surface)); border: 1px dashed color-mix(in oklab, var(--warning) 40%, var(--border)); padding: 22px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 10px;">
-        <h3 style="margin: 0; font-size: 22px; font-family: var(--font-display); color: var(--text); display: flex; align-items: center; gap: 10px;">
-          <span style="display: inline-block; width: 10px; height: 10px; background: var(--error); border-radius: 50%; animation: pulse 1.5s infinite; flex-shrink: 0;"></span>
-          Live Gmail Client Responses (Hot Leads)
-        </h3>
-        <span class="status err" style="font-weight: 700; letter-spacing: 0.02em;" id="replyCount">0 New Messages</span>
-      </div>
-      <div id="liveInboxContainer" class="list" style="max-height: 220px; overflow-y: auto; display: grid; gap: 12px; padding-right: 4px;">
-        <div class="item" style="text-align: center; color: var(--muted); font-style: italic; padding: 20px; border: 1px dashed var(--divider); background: transparent;">
-          No new replies detected yet. Running loops in background...
-        </div>
-      </div>
-    </section>
-
-    <section class="grid" id="leads">
-      <article class="card span-12">
-        <div class="toolbar">
-          <div>
-            <h3>All Extracted Pipeline Leads</h3>
-            <p class="tiny" id="dupNotification">Automated system pushes real time logs here.</p>
-          </div>
-          <div class="filters">
-            <label class="file-label" for="csvFileInput">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              Import Scraped CSV
-            </label>
-            <input type="file" id="csvFileInput" accept=".csv" style="display:none;" />
-
-            <select class="field" id="countryFilter">
-              <option value="">All Regions</option>
-              <option value="USA">USA</option>
-              <option value="UK">UK</option>
-              <option value="Canada">Canada</option>
-            </select>
-            <button class="btn btn-secondary" id="downloadBtn">Download CSV</button>
-          </div>
-        </div>
-        
-        <div style="overflow:auto;">
-          <table id="leadsTable">
-            <thead>
-              <tr>
-                <th>Business Name</th>
-                <th>Country</th>
-                <th>Address</th>
-                <th>Phone</th>
-                <th>Website</th>
-                <th>Email Contact</th>
-                <th>Site Condition</th>
-                <th>Email Status</th>
-                <th>Action</th> </tr>
-            </thead>
-            <tbody id="leadsBody"></tbody>
-          </table>
-        </div>
-      </article>
-
-      <article class="card span-8" id="workflow">
-        <h3>Pipeline Operations Roadmap</h3>
-        <div class="list">
-          <div class="item"><strong>Step 1:</strong> Background Engine scrapes 75 records across USA/UK/CA.</div>
-          <div class="item"><strong>Step 2:</strong> Immediate outbound cold pitch is dispatched via secure secure TLS app layer.</div>
-          <div class="item"><strong>Step 3:</strong> Live dashboard visualizes direct conversions based on outreach metric ratios.</div>
-        </div>
-      </article>
-
-      <article class="card span-4">
-        <h3>Engine Status</h3>
-        <div class="list">
-          <div class="item"><strong>Outreach Sync:</strong> Connected</div>
-          <div class="item"><strong>Cron Loop Trigger:</strong> 5 Hours Indefinitely</div>
-          <div class="item"><strong>Solo Target Base Price:</strong> $299 / £249</div>
-        </div>
-      </article>
-    </section>
+    <section class="hero" id="overview"><div><div class="eyebrow">Clean + usable</div><h2>Ab fake automation ke baghair proper working dashboard.</h2><p>Yeh version stable hai: CSV import, manual paste import, dedupe, filters, status updates, aur CSV export. Koi fake Gmail ya fake autopilot claim nahi hai.</p><div class="actions"><button class="btn btn-primary" id="downloadTop">Download CSV</button><button class="btn btn-secondary" id="clearBtn">Clear leads</button></div></div><div class="stats"><div class="stat"><div class="label">Total leads</div><div class="value" id="totalStat">0</div></div><div class="stat"><div class="label">Unique leads</div><div class="value" id="uniqueStat">0</div></div><div class="stat"><div class="label">Sent</div><div class="value" id="sentStat">0</div></div></div></section>
+    <section class="grid" id="leads"><article class="card span-12"><div class="toolbar"><div><h3>Lead list</h3><p class="tiny">Browser-only working mode. Status updates isi session mein chalengi.</p></div><div class="filters"><select class="field" id="countryFilter"><option value="">All countries</option><option>USA</option><option>UK</option><option>Canada</option></select><select class="field" id="statusFilter"><option value="">All statuses</option><option>New</option><option>Ready</option><option>Sent</option><option>Review</option></select><button class="btn btn-secondary" id="downloadBtn">Download CSV</button></div></div><div style="overflow:auto;"><table id="leadsTable"><thead><tr><th>Business</th><th>Niche</th><th>Country</th><th>City</th><th>Email</th><th>Website</th><th>Status</th><th>Action</th></tr></thead><tbody id="leadsBody"></tbody></table></div></article><article class="card span-8" id="import"><h3>Import leads</h3><div class="uploader"><p class="tiny">CSV columns best hain: business,niche,country,city,email,website,status</p><input class="field" type="file" id="csvFile" accept=".csv" /><textarea class="textarea" id="pasteBox" placeholder="Ya yahan CSV lines paste karo, first line headers ke sath."></textarea><div style="display:flex;gap:12px;flex-wrap:wrap"><button class="btn btn-primary" id="importBtn">Import pasted CSV</button><button class="btn btn-secondary" id="sampleBtn">Insert sample CSV</button></div></div></article><article class="card span-4" id="notes"><h3>Notes</h3><div class="list"><div class="item">No fake Gmail sync.</div><div class="item">No broken POST backend dependency.</div><div class="item">No localStorage dependency.</div><div class="item">Use CSV export after filtering leads.</div></div></article></section>
+    <section class="footer"><strong>Use case:</strong> leads ko import karo, dedupe karo, status mark karo, phir outreach manually bhejo.</section>
   </main>
 </div>
-
 <script>
-let allLeads = [];
+const sampleLeads=[
+{business:'Prime Cut Barbers',niche:'Barber',country:'UK',city:'Manchester',email:'hello@primecutbarbers.co.uk',website:'primecutbarbers.co.uk',status:'Ready'},
+{business:'Maple Core Fitness',niche:'Gym',country:'Canada',city:'Toronto',email:'team@maplecorefitness.ca',website:'maplecorefitness.ca',status:'New'},
+{business:'Riverside Family Clinic',niche:'Clinic',country:'USA',city:'Austin',email:'contact@riversidefamilyclinic.com',website:'riversidefamilyclinic.com',status:'Review'},
+{business:'Urban Flame Kitchen',niche:'Restaurant',country:'USA',city:'Chicago',email:'info@urbanflamekitchen.com',website:'urbanflamekitchen.com',status:'New'}
+];
+let allLeads=[];
+const body=document.getElementById('leadsBody');
+const countryFilter=document.getElementById('countryFilter');
+const statusFilter=document.getElementById('statusFilter');
+const totalStat=document.getElementById('totalStat');
+const uniqueStat=document.getElementById('uniqueStat');
+const sentStat=document.getElementById('sentStat');
 
-// Local cache recovery
-if (localStorage.getItem('leadpilot_cache')) {
-  try { allLeads = JSON.parse(localStorage.getItem('leadpilot_cache')); } catch(e) { allLeads = []; }
+function safe(v){return (v||'').toString().trim();}
+function keyOf(lead){return [safe(lead.business).toLowerCase(),safe(lead.email).toLowerCase(),safe(lead.website).toLowerCase()].join('|');}
+function dedupe(leads){
+  const seen=new Map();
+  leads.forEach(l=>{
+    const k=keyOf(l);
+    if(!seen.has(k)) seen.set(k,{
+      business:safe(l.business),
+      niche:safe(l.niche),
+      country:safe(l.country),
+      city:safe(l.city),
+      email:safe(l.email),
+      website:safe(l.website),
+      status:safe(l.status)||'New'
+    });
+  });
+  return [...seen.values()];
 }
-
 function statusClass(status){
-  if(!status) return 'err';
-  const s = status.toLowerCase();
-  if(s.includes('modern') || s.includes('sent')) return 'ok';
-  if(s.includes('outdated') || s.includes('review') || s.includes('pending')) return 'warn';
+  if(/sent|ready/i.test(status)) return 'ok';
+  if(/review/i.test(status)) return 'warn';
   return 'err';
 }
-
-function updateDashboardMetrics(leads) {
-  let totalSent = 0;
-  leads.forEach(lead => {
-    const s = (lead.status || lead['Email Status'] || '').toLowerCase();
-    if (s.includes('sent')) totalSent++;
-  });
-  
-  // Real-time counter math calculation update
-  const projectedSales = totalSent * 299;
-  
-  document.getElementById('statTotal').innerText = leads.length;
-  document.getElementById('statSent').innerText = totalSent;
-  document.getElementById('statSales').innerText = '$' + projectedSales;
-  
-  const now = new Date();
-  const totalDaysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
-  document.getElementById('statDays').innerText = totalDaysInMonth - now.getDate();
-}
-
 function renderRows(rows){
-  const body = document.getElementById('leadsBody');
-  body.innerHTML = '';
-  rows.forEach(lead => {
-    const name = lead.business || lead['Business Name'] || 'N/A';
-    const country = lead.country || lead['Country'] || 'N/A';
-    const address = lead.address || lead['Address'] || 'N/A';
-    const phone = lead.phone || lead['Phone'] || 'N/A';
-    const website = lead.website || lead['Website'] || 'N/A';
-    const email = lead.email || lead['Email'] || 'N/A';
-    const condition = lead.condition || lead['Site Condition'] || 'Unknown';
-    const status = lead.status || lead['Email Status'] || 'Pending';
-
-    // Button Generation Check Engine logic
-    let actionButtonHTML = '';
-    if (status.toLowerCase().includes('pending') && email !== 'N/A' && email !== '') {
-      actionButtonHTML = `<button class="send-email-btn" onclick="triggerManualOutreach('${name.replace(/'/g, "\\'")}', '${email}', '${website}')">📧 Send</button>`;
-    } else {
-      actionButtonHTML = `<span class="disabled-action-text">-</span>`;
-    }
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td><strong>${name}</strong></td>
-      <td><span class="status" style="background:color-mix(in oklab, var(--primary) 10%, var(--surface-2)); color:var(--text); font-weight:600;">${country}</span></td>
-      <td class="tiny">${address}</td>
-      <td>${phone}</td>
-      <td><a href="${website}" target="_blank" style="color:var(--primary);text-decoration:underline;font-weight:500;">Link</a></td>
-      <td class="tiny" style="word-break:break-all;">${email}</td>
-      <td><span class="status ${statusClass(condition)}">${condition}</span></td>
-      <td><span class="status ${statusClass(status)}">${status}</span></td>
-      <td>${actionButtonHTML}</td>
-    `;
+  body.innerHTML='';
+  rows.forEach((lead,idx)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td>${lead.business}</td><td>${lead.niche}</td><td>${lead.country}</td><td>${lead.city}</td><td>${lead.email}</td><td>${lead.website}</td><td><span class="status ${statusClass(lead.status)}">${lead.status}</span></td><td><button class="btn btn-secondary" data-idx="${idx}">Mark sent</button></td>`;
     body.appendChild(tr);
   });
+  [...body.querySelectorAll('button[data-idx]')].forEach(btn=>btn.addEventListener('click',()=>{
+    const filtered=getFiltered();
+    const lead=filtered[Number(btn.dataset.idx)];
+    const k=keyOf(lead);
+    allLeads=allLeads.map(x=>keyOf(x)===k?{...x,status:'Sent'}:x);
+    applyFilters();
+  }));
 }
-
-function renderReplies(replies) {
-  const container = document.getElementById('liveInboxContainer');
-  const countBadge = document.getElementById('replyCount');
-  if(!replies || replies.length === 0) return;
-  
-  container.innerHTML = '';
-  countBadge.innerText = `${replies.length} Hot Replies`;
-  
-  replies.forEach(reply => {
-    const div = document.createElement('div');
-    div.className = 'item';
-    div.style.borderLeft = "4px solid var(--error)";
-    div.style.background = "var(--surface-2)";
-    div.style.padding = "16px";
-    div.style.borderRadius = "12px";
-    div.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
-        <strong style="font-size: 15px; color: var(--text);">📧 ${reply.sender}</strong>
-        <span class="status err" style="font-size: 11px; font-weight: 600;">Reply Received</span>
-      </div>
-      <div class="tiny" style="color: var(--muted); font-weight: 500; margin-bottom: 8px;">
-        <strong style="color: var(--text);">Subject:</strong> ${reply.subject}
-      </div>
-      <p style="margin: 0; font-size: 13px; line-height: 1.5; color: var(--text); background: color-mix(in oklab, var(--bg) 70%, transparent); padding: 12px; border-radius: 8px; border: 1px solid var(--divider);">
-        "${reply.snippet}"
-      </p>
-    `;
-    container.appendChild(div);
-  });
+function updateStats(){
+  totalStat.textContent=allLeads.length;
+  uniqueStat.textContent=dedupe(allLeads).length;
+  sentStat.textContent=allLeads.filter(x=>x.status==='Sent').length;
 }
-
-// FRONTEND INTERACTION: MANUAL OUTREACH LIVE SYNCHRONIZATION FUNCTION
-async function triggerManualOutreach(businessName, email, website) {
-  if (confirm(`Kya aap ${businessName} ko manual outreach list me mark karna chahte hain?`)) {
-    try {
-      // POST Request pushing directly to server api instance
-      const response = await fetch('/api/leads', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: "update_status",
-          business: businessName,
-          status: "Sent"
-        })
-      });
-      
-      if (response.ok) {
-        // Update state across local state object array safely
-        allLeads.forEach(lead => {
-          const name = lead.business || lead['Business Name'] || '';
-          if (name === businessName) {
-            if(lead.status) lead.status = "Sent";
-            if(lead['Email Status']) lead['Email Status'] = "Sent";
-          }
-        });
-
-        // Sync state back to local cache instantly
-        localStorage.setItem('leadpilot_cache', JSON.stringify(allLeads));
-        
-        // Render dynamic changes instantly without whole page jitter
-        updateDashboardMetrics(allLeads);
-        applyFilters();
-      } else {
-        alert("Server failed to lock status change. Try clicking Refresh CRM.");
-      }
-    } catch(err) {
-      console.error("Outreach API sync failed:", err);
-      alert("Could not connect to database endpoint.");
-    }
-  }
+function getFiltered(){
+  const c=countryFilter.value;
+  const s=statusFilter.value;
+  return allLeads.filter(x=>(!c||x.country===c)&&(!s||x.status===s));
 }
-
-function applyFilters() {
-  const countryFilter = document.getElementById('countryFilter');
-  const selectedLocation = countryFilter.value.toLowerCase();
-  if (!selectedLocation) { renderRows(allLeads); return; }
-  const filtered = allLeads.filter(x => {
-    const cntry = (x.country || x['Country'] || '').toLowerCase();
-    const addr = (x.address || x['Address'] || '').toLowerCase();
-    return cntry === selectedLocation || addr.includes(selectedLocation);
-  });
-  renderRows(filtered);
+function applyFilters(){
+  renderRows(getFiltered());
+  updateStats();
 }
-
-// BACKEND SYNC AND SAVE FOR DEDUPLICATION
-document.getElementById('csvFileInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file) return;
-  
-  Papa.parse(file, {
-    header: true,
-    skipEmptyLines: true,
-    complete: async function(results) {
-      const incomingData = results.data;
-      const initialLength = incomingData.length;
-      
-      let combinedLeads = [...allLeads, ...incomingData];
-      const uniqueMap = new Map();
-      
-      combinedLeads.forEach(item => {
-        const name = (item.business || item['Business Name'] || '').trim().toLowerCase();
-        const website = (item.website || item['Website'] || '').trim().toLowerCase();
-        const uniqueKey = `${name}_${website}`;
-        if (uniqueKey && uniqueKey !== '_') {
-          if (!uniqueMap.has(uniqueKey)) uniqueMap.set(uniqueKey, item);
-        }
-      });
-      
-      allLeads = Array.from(uniqueMap.values());
-      const duplicatesRemoved = (allLeads.length + initialLength) - allLeads.length;
-      
-      localStorage.setItem('leadpilot_cache', JSON.stringify(allLeads));
-      
-      // CRITICAL: Push unique array directly to Server API Storage to lock it!
-      try {
-        await fetch('/api/leads', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ leads: allLeads })
-        });
-      } catch(err) { console.log("Local backup stored. Worker update pending."); }
-
-      const notification = document.getElementById('dupNotification');
-      notification.innerHTML = `<span style="color:var(--success); font-weight:700;">✅ Cleaned & Saved! Removed ${duplicatesRemoved} duplicates.</span>`;
-      setTimeout(() => { notification.innerText = "Automated system pushes real time logs here."; }, 5000);
-
-      updateDashboardMetrics(allLeads);
-      applyFilters();
-    }
-  });
-});
-
-function tableToCSV(){
-  return [...document.querySelectorAll('#leadsTable tr')].map(row=>[...row.querySelectorAll('th,td')].map(col=>'"'+col.innerText.replace(/"/g,'""')+'"').join(',')).join('\n');
+function tableToCSV(rows){
+  const headers=['business','niche','country','city','email','website','status'];
+  return [headers.join(',')]
+    .concat(rows.map(r=>headers.map(h=>'"'+safe(r[h]).replace(/"/g,'""')+'"').join(',')))
+    .join('\n');
 }
-
 function downloadCSV(){
-  const blob = new Blob([tableToCSV()], {type:'text/csv;charset=utf-8;'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href = url; a.download = 'leadpilot-pipeline.csv';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+  const rows=getFiltered();
+  const blob=new Blob([tableToCSV(rows)],{type:'text/csv;charset=utf-8;'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download='filtered-leads.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
-
-// FULLY FUNCTIONAL FORCE REFRESH FROM SERVER STORAGE
-async function loadLeads(){
-  const notification = document.getElementById('dupNotification');
-  try{
-    const res = await fetch('/api/leads');
-    if(!res.ok) throw new Error('Network Sync Failed');
-    const data = await res.json();
-    
-    // Server database block overwrite
-    if (data && Array.isArray(data.leads) && data.leads.length > 0) {
-      allLeads = data.leads;
-      localStorage.setItem('leadpilot_cache', JSON.stringify(allLeads));
-      notification.innerHTML = `<span style="color:var(--primary); font-weight:600;">🔄 CRM Synced perfectly with Cloudflare Database!</span>`;
-    }
-    if(data && data.replies) renderReplies(data.replies);
-  }catch(e) {
-    console.log("Using active fallback layer cache.");
-  }
-  updateDashboardMetrics(allLeads);
+function parseCSV(text){
+  const lines=text.trim().split(/\r?\n/).filter(Boolean);
+  if(lines.length<2) return [];
+  const headers=lines[0].split(',').map(x=>x.trim().toLowerCase());
+  return lines.slice(1).map(line=>{
+    const cols=line.split(',');
+    const obj={};
+    headers.forEach((h,i)=>obj[h]=safe(cols[i]));
+    return {
+      business:obj.business||obj['business name']||'',
+      niche:obj.niche||'',
+      country:obj.country||'',
+      city:obj.city||'',
+      email:obj.email||'',
+      website:obj.website||'',
+      status:obj.status||'New'
+    };
+  }).filter(x=>x.business);
+}
+function importRows(rows){
+  allLeads=dedupe(allLeads.concat(rows));
   applyFilters();
 }
 
-document.getElementById('downloadBtn').addEventListener('click', downloadCSV);
-document.getElementById('downloadTop').addEventListener('click', downloadCSV);
-document.getElementById('syncBtn').addEventListener('click', loadLeads);
-document.getElementById('countryFilter').addEventListener('change', applyFilters);
-
-document.getElementById('themeBtn').addEventListener('click', () => {
-  const root = document.documentElement;
-  root.setAttribute('data-theme', root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+document.getElementById('seedBtn').addEventListener('click',()=>importRows(sampleLeads));
+document.getElementById('sampleBtn').addEventListener('click',()=>{
+  document.getElementById('pasteBox').value='business,niche,country,city,email,website,status\nPrime Cut Barbers,Barber,UK,Manchester,hello@primecutbarbers.co.uk,primecutbarbers.co.uk,Ready\nMaple Core Fitness,Gym,Canada,Toronto,team@maplecorefitness.ca,maplecorefitness.ca,New';
 });
-
-// App init runs
-updateDashboardMetrics(allLeads);
-applyFilters();
-loadLeads();
-
-setInterval(loadLeads, 30000);
+document.getElementById('importBtn').addEventListener('click',()=>{
+  const text=document.getElementById('pasteBox').value;
+  importRows(parseCSV(text));
+});
+document.getElementById('csvFile').addEventListener('change',async(e)=>{
+  const file=e.target.files[0];
+  if(!file) return;
+  const text=await file.text();
+  importRows(parseCSV(text));
+});
+document.getElementById('downloadBtn').addEventListener('click',downloadCSV);
+document.getElementById('downloadTop').addEventListener('click',downloadCSV);
+document.getElementById('clearBtn').addEventListener('click',()=>{
+  allLeads=[];
+  applyFilters();
+});
+countryFilter.addEventListener('change',applyFilters);
+statusFilter.addEventListener('change',applyFilters);
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  const root=document.documentElement;
+  root.setAttribute('data-theme',root.getAttribute('data-theme')==='dark'?'light':'dark');
+});
+importRows(sampleLeads);
 </script>
 </body>
 </html>
